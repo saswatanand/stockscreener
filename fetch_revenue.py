@@ -11,7 +11,7 @@ def quarterly_earnings_roc(ticker):
     for date in sorted(revenues.keys(), ):
         revenues_list.append(revenues[date])
         if debug:
-            print("{} {}".format(date, revenues[date]))
+            print("{} {} {}".format(ticker, date, revenues[date]))
 
     revenues_pct_change = pd.Series(revenues_list).pct_change()
     result = []
@@ -21,7 +21,14 @@ def quarterly_earnings_roc(ticker):
 
     return result
 
+def process_tickers(tickers):
+    df = pd.DataFrame(columns=['Q-3', 'Q-2', 'Q-1'])
+    for t in tickers:
+        if debug:
+            print("Processing {}".format(t))
+        df.loc[t] = quarterly_earnings_roc(t)
+    return df
+
 tickers = ['four', 'stne']
-for t in tickers:
-    print(t)
-    print(quarterly_earnings_roc(t))
+df = process_tickers(tickers)
+print(df)
