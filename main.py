@@ -1,11 +1,14 @@
 import pandas as pd
 from revenue import quarterly_revenues_roc
 from market_cap import quarterly_market_cap_roc
+import yahoo_fin.stock_info as si
 
 debug = False
 
+
+
 def process_tickers(tickers):
-    df = pd.DataFrame(columns=['R:Q-3', 'R:Q-2', 'R:Q-1', 'MC:Q-3', 'MC:Q-2', 'MC:Q-1', 'MC:Q-0', 'MC:current'])
+    df = pd.DataFrame(columns=['R:Q-3', 'R:Q-2', 'R:Q-1', 'MC:Q-3', 'MC:Q-2', 'MC:Q-1', 'MC:Q-0', 'MC:current', 'EPS', 'RevenuePerShare'])
     df.index.name='ticker'
     for t in tickers:
         print("Processing {}".format(t))
@@ -23,7 +26,18 @@ def process_tickers(tickers):
             row.append(float("NaN"))
         row.extend(mc_roc)
         row.append(current_mc)
-            
+
+        quote_table = si.get_quote_table(t)
+        row.append(quote_table['EPS (TTM)'])
+        
+        try:
+            stats = si.get_stats(t)
+            revenue_per_share = stats.loc['Revenue Per Share (ttm)' == stats.Attribute]['Value'].values[0]
+            row.append(revenue_per_share)
+        except ValueError:
+            print('error retrieving revenue per share.')
+            row.append('')
+        
         if debug:
             print("row {}".format(row))
         df.loc[t] = row
